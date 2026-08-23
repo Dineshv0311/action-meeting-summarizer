@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
@@ -15,10 +16,19 @@ class ActionItem(BaseModel):
 
 class MeetingSummaryResult(BaseModel):
     summary: str = Field(..., description="Executive narrative summary of the meeting")
-    key_decisions: List[str] = Field(default_factory=list, description="Explicit decisions and technical or business directions agreed upon")
-    action_items: List[ActionItem] = Field(default_factory=list, description="Extracted actionable tasks with assignees and due dates")
-    open_questions: List[str] = Field(default_factory=list, description="Unresolved topics, risks, or tabled questions")
+    key_decisions: List[str] = Field(default_factory=list, description="Explicit decisions and agreements")
+    action_items: List[ActionItem] = Field(default_factory=list, description="Extracted actionable tasks")
+    open_questions: List[str] = Field(default_factory=list, description="Unresolved topics or blockers")
 
-class ProcessedMeeting(BaseModel):
-    transcription: TranscriptionResult
-    analysis: MeetingSummaryResult
+class MeetingRecord(BaseModel):
+    """Complete persisted entity for a meeting."""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str = Field(default="Untitled Meeting")
+    transcript: str
+    language: str = "en"
+    duration_seconds: Optional[float] = None
+    summary: str
+    key_decisions: List[str] = Field(default_factory=list)
+    action_items: List[ActionItem] = Field(default_factory=list)
+    open_questions: List[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
