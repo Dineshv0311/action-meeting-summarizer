@@ -1,14 +1,23 @@
-from flask import Flask
+from pathlib import Path
+from flask import Flask, render_template
 from flask_cors import CORS
-from app.core.config import settings
+from app.core.config import settings, BASE_DIR
 from app.api.v1.routes import api_v1_bp
 
 def create_app() -> Flask:
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        template_folder=str(BASE_DIR / "templates"),
+        static_folder=str(BASE_DIR / "static")
+    )
     app.config["MAX_CONTENT_LENGTH"] = settings.max_content_length_bytes
     
     CORS(app)
     app.register_blueprint(api_v1_bp)
+
+    @app.route("/", methods=["GET"])
+    def index():
+        return render_template("index.html")
 
     @app.route("/health", methods=["GET"])
     def health_check():

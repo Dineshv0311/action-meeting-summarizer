@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Intelligence Summarizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg shadow-sm">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 leading-tight">Meeting Summarizer</h1>
+                    <p class="text-xs text-slate-500">Whisper ASR + Gemini Structured Intelligence</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    API Online
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+        
+        <!-- Left Column: Upload & History (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Upload Card -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="text-base font-semibold text-slate-900 mb-4 flex items-center">
+                    <i data-lucide="upload-cloud" class="w-5 h-5 mr-2 text-indigo-600"></i>
+                    Process New Meeting
+                </h2>
+
+                <form id="uploadForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Meeting Title (Optional)</label>
+                        <input type="text" id="meetingTitle" placeholder="e.g., Sprint Planning & Review" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Meeting Audio File</label>
+                        <div id="dropZone" class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-indigo-400 transition cursor-pointer bg-slate-50">
+                            <input type="file" id="audioFile" accept=".mp3,.wav,.m4a,.webm,.mp4" class="hidden">
+                            <i data-lucide="file-audio" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                            <p id="fileNameDisplay" class="text-xs text-slate-600 font-medium">Click to browse or drop audio here</p>
+                            <p class="text-[11px] text-slate-400 mt-1">MP3, WAV, M4A, WEBM (Max 25MB)</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="processBtn" 
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                        <span>Transcribe & Summarize</span>
+                    </button>
+                </form>
+
+                <!-- Progress Indicator -->
+                <div id="loadingState" class="hidden mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                    <div class="flex items-center space-x-3">
+                        <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <div class="text-xs">
+                            <p class="font-semibold text-indigo-900" id="progressStatus">Transcribing audio via Whisper...</p>
+                            <p class="text-indigo-600">Extracting action items with Gemini</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Previous Meetings List -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center">
+                        <i data-lucide="history" class="w-5 h-5 mr-2 text-indigo-600"></i>
+                        Meeting History
+                    </h2>
+                    <button id="refreshHistoryBtn" class="text-slate-400 hover:text-slate-600 transition" title="Refresh list">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="historyList" class="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                    <p class="text-xs text-slate-400 text-center py-4">Loading saved meetings...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Structured Intelligence View (8 cols) -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <!-- Welcome / Empty State -->
+            <div id="emptyState" class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+                <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="file-text" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-1">No Meeting Selected</h3>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">Upload an audio recording on the left or select a previous meeting from the history panel to view structured summaries and tasks.</p>
+            </div>
+
+            <!-- Active Meeting Details (Hidden until loaded) -->
+            <div id="resultsContainer" class="hidden space-y-6">
+                
+                <!-- Meeting Header Card -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                    <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+                        <div>
+                            <h2 id="viewTitle" class="text-xl font-bold text-slate-900">Untitled Meeting</h2>
+                            <p id="viewMeta" class="text-xs text-slate-500 mt-1 flex items-center gap-3">
+                                <span><i data-lucide="calendar" class="w-3.5 h-3.5 inline mr-1"></i><span id="viewDate">--</span></span>
+                                <span><i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1"></i><span id="viewDuration">--s</span></span>
+                                <span><i data-lucide="globe" class="w-3.5 h-3.5 inline mr-1"></i><span id="viewLanguage">en</span></span>
+                            </p>
+                        </div>
+                        <button id="deleteMeetingBtn" class="text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Record
+                        </button>
+                    </div>
+
+                    <!-- Executive Summary -->
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
+                            <i data-lucide="align-left" class="w-4 h-4 mr-1.5 text-indigo-600"></i> Executive Summary
+                        </h3>
+                        <p id="viewSummary" class="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100"></p>
+                    </div>
+
+                    <!-- Key Decisions -->
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Key Decisions
+                        </h3>
+                        <ul id="viewDecisions" class="space-y-2"></ul>
+                    </div>
+
+                    <!-- Action Items Table -->
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
+                            <i data-lucide="list-checks" class="w-4 h-4 mr-1.5 text-indigo-600"></i> Action Items & Assigned Tasks
+                        </h3>
+                        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-slate-200 text-xs">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">Task</th>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">Assignee</th>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">Deadline</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="viewActionItems" class="divide-y divide-slate-100 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Open Questions -->
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
+                            <i data-lucide="help-circle" class="w-4 h-4 mr-1.5 text-amber-600"></i> Open Questions & Blockers
+                        </h3>
+                        <ul id="viewOpenQuestions" class="space-y-2"></ul>
+                    </div>
+
+                    <!-- Full Transcript Accordion -->
+                    <details class="group bg-slate-50 rounded-lg border border-slate-200 p-4">
+                        <summary class="flex justify-between items-center font-medium cursor-pointer text-xs text-slate-700 select-none">
+                            <span class="flex items-center">
+                                <i data-lucide="file-text" class="w-4 h-4 mr-1.5 text-slate-500"></i> Full Verbatim Transcript
+                            </span>
+                            <span class="transition group-open:rotate-180">
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
+                            </span>
+                        </summary>
+                        <p id="viewTranscript" class="text-xs text-slate-600 mt-3 pt-3 border-t border-slate-200 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto custom-scrollbar"></p>
+                    </details>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
