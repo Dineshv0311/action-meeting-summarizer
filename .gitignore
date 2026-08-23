@@ -1,0 +1,32 @@
+# Environment variables & secrets
+.env
+.env.local
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Uploaded meeting audio & temp files
+uploads/*
+!uploads/.gitkeep
+*.mp3
+*.wav
+*.m4a
+*.webm
+
+# SQLite Database
+*.db
+*.sqlite3
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
