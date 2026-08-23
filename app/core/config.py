@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Set
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -19,9 +19,7 @@ class Settings(BaseSettings):
     def max_content_length_bytes(self) -> int:
         return self.MAX_FILE_SIZE_MB * 1024 * 1024
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()
 settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
