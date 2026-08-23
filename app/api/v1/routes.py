@@ -12,8 +12,22 @@ def transcribe_meeting():
 
     uploaded_file = request.files["audio"]
     file_path = validate_and_save_audio(uploaded_file)
-
     result = container.meeting_service.process_transcription(file_path)
+
+    return jsonify({
+        "status": "success",
+        "data": result.model_dump()
+    }), 200
+
+@api_v1_bp.route("/meetings/process", methods=["POST"])
+def process_full_meeting():
+    """Upload audio -> Transcribe -> Structured Summary + Action Items."""
+    if "audio" not in request.files:
+        return jsonify({"error": "Missing multipart form field 'audio'"}), 400
+
+    uploaded_file = request.files["audio"]
+    file_path = validate_and_save_audio(uploaded_file)
+    result = container.meeting_service.process_meeting_pipeline(file_path)
 
     return jsonify({
         "status": "success",
