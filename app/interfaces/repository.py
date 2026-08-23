@@ -1,23 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Optional
-from uuid import UUID
-
-from app.domain.models import Meeting, Summary, Transcript
-
+from typing import List, Optional
+from app.domain.models import MeetingRecord
 
 class IMeetingRepository(ABC):
-    @abstractmethod
-    def save_meeting(self, meeting: Meeting) -> None:
-        """Persist a meeting."""
+    """Abstraction for meeting data persistence (DIP / ISP)."""
 
     @abstractmethod
-    def save_transcript(self, transcript: Transcript) -> None:
-        """Persist a transcript."""
+    def save(self, meeting: MeetingRecord) -> MeetingRecord:
+        """Persists a new meeting record."""
+        pass
 
     @abstractmethod
-    def save_summary(self, summary: Summary) -> None:
-        """Persist a summary."""
+    def get_by_id(self, meeting_id: str) -> Optional[MeetingRecord]:
+        """Retrieves a meeting record by its unique ID."""
+        pass
 
     @abstractmethod
-    def get_meeting(self, meeting_id: UUID) -> Optional[Meeting]:
-        """Load a meeting by identifier."""
+    def get_all(self, limit: int = 50, offset: int = 0) -> List[MeetingRecord]:
+        """Retrieves a paginated list of meetings ordered by creation date."""
+        pass
+
+    @abstractmethod
+    def delete(self, meeting_id: str) -> bool:
+        """Deletes a meeting record by ID."""
+        pass
