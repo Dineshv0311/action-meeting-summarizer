@@ -13,6 +13,20 @@ An enterprise-ready meeting transcription and action-oriented intelligence engin
 - **Clean Architecture & SOLID:** Modular boundaries decoupling domain rules, storage adapters, and external APIs.
 
 ---
+ 
+## Screenshots
+ 
+### Dashboard — No Meeting Selected
+Upload panel supporting drag-and-drop audio (MP3, WAV, M4A, WEBM up to 25MB), with meeting history tracked on the left.
+ 
+![Dashboard empty state](./screenshots/dashboard-empty.png)
+ 
+### Structured Meeting Intelligence Output
+Once processed, each meeting record displays an executive summary, key decisions, an action items table (task / assignee / deadline), open questions & blockers, and an expandable full verbatim transcript.
+ 
+![Meeting summary output](./screenshots/meeting-summary.png)
+ 
+---
 
 ## Architecture & SOLID Compliance
 
