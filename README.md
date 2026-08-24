@@ -27,6 +27,14 @@ Once processed, each meeting record displays an executive summary, key decisions
 ![Meeting summary output](./screenshots/meeting-summary.png)
  
 ---
+ 
+## Demo Video
+ 
+[Watch the Demo Video](https://github.com/user-attachments/assets/6cdc726d-eb61-4241-aaab-2f91497d4981)
+ 
+*A walkthrough of the upload → transcription → structured summarization → action item extraction pipeline.*
+ 
+---
 
 ## Architecture & SOLID Compliance
 
